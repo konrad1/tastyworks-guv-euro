@@ -9,10 +9,7 @@
 import sys
 import os
 import datetime
-from datetime import timedelta
-
 import pandas
-from pandas import DataFrame
 
 eurkurstable = None
 
@@ -43,14 +40,15 @@ def read_eurusd(eurusd_csv: str) -> None:
                     eurkurstable[date] = None
 
 
-def get_eurusd(date: datetime) -> float:
-    wkdate = date
+def get_eurusd(dfdate: pandas.Timestamp) -> float:
+    wkdate = datetime.datetime(dfdate.year, dfdate.month, dfdate.day)
     while True:
         try:
             x = eurkurstable[wkdate]
         except KeyError:
             delta = datetime.timedelta(days=1)
             wkdate = wkdate - delta
+            #x = 1.0
             continue
             #print(f'ERROR: No EURUSD conversion data available for {date},'
             #      ' please download newer data into the file eurusd.csv.')
@@ -86,30 +84,35 @@ def usage() -> None:
 def get_euramount(eurkurs:float, usdamount:float)-> float:
     return usdamount / eurkurs
 
-def augmenteuramount(dataframe:pandas.DataFrame,debug:bool):
+def augmenteuramount(df:pandas.DataFrame, debug:bool):
     sublotId:str
     closeDate:datetime
     gainloss:str
     if debug:
-        print(dataframe.info)
-        print(dataframe.head(8))
-    wk=dataframe[["SUBLOT_ID", "CLOSE_DATE", "NO_WS_GAINLOSS"]]
+        print("csv:")
+        print(df.info)
+        print(df.head(8))
+    df["EURO_KURS"] = df["CLOSE_DATE"].apply(get_eurusd)
     if debug:
-        print(wk.info)
-        print(wk.head(8))
-        print(wk.dtypes)
-    wk["EUROKURS"]=wk["CLOSE_DATE"].apply(get_eurusd)
-    wk["EUROAMOUNT"]=wk["EUROKURS"] * wk["NO_WS_GAINLOSS"]
-        # (sublotId, closeDate, gainloss) = wk.iloc[i]
-        # eurkurs = get_eurusd(closeDate)
-        # usdamount = (float) gainloss
-        # euramount = eurkurs * usdamount
-        #dataframe.iloc[i]["EUROKURS"]=eurkurs
-        #wk["EURO GUV"]=euramount
+        print("EURO_KURS:")
+        print(df.info)
+        print(df.head(8))
+        print(df.dtypes)
+    df["EURO_AMOUNT"] = df.NO_WS_GAINLOSS / df.EURO_KURS
+    if debug:
+        print("EURO_AMOUNT:")
+        print(df.info)
+        print(df.head(8))
+        print(df.dtypes)
+
+
+def write_csv_augmented(df: pandas.DataFrame, output_csv:str):
+    df.to_csv(output_csv, index=False)
 
 
 def main(argv) -> None:
     eurusd_csv: str = "https://www.bundesbank.de/statistic-rmi/StatisticDownload?tsId=BBEX3.D.USD.EUR.BB.AC.000&its_csvFormat=en&its_fileFormat=csv&mode=its&its_from=2010"
+
     try:
         import getopt
         opts, args = getopt.getopt(argv, 'o:u:vhd', ['eurusd=',
@@ -138,17 +141,18 @@ def main(argv) -> None:
             show = True
         elif opt == '--summary':
             output_summary = arg
-        elif opt == '--tax-output':
-            tax_output = arg
+        elif opt == '--output':
+            output_csv: str = arg
     if len(args) == 0:
         usage()
         sys.exit()
     read_eurusd(eurusd_csv)
     args.reverse()
-    dataframe: DataFrame
+    df: pandas.DataFrame
     for csv_file in args:
-        dataframe = read_csv_tasty(csv_file)
-    augmenteuramount(dataframe,debug)
+        df = read_csv_tasty(csv_file)
+    augmenteuramount(df ,debug)
+    write_csv_augmented(df, output_csv)
 
 
 # Press the green button in the gutter to run the script.
