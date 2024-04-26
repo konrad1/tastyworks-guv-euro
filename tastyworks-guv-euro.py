@@ -18,14 +18,14 @@ eurkurstable = None
 
 # Setup 'eurkurs' as dict() to contain the EURUSD exchange rate on a given date
 # based on official data from ezb.de.
-# If the file 'eurusd.csv' does not exist, download the data from
-# the bundesbank directly.
+# If the file 'eurusd.csv' does not exist, exception is raised (manually download the data from
+# the bundesbank before starting the program.
 def read_eurusd(eurusd_csv: str) -> None:
     import csv
     global eurkurstable
 
     if not os.path.exists(eurusd_csv):
-        raise 'eurousd_csv does not exist'
+        raise 'eurousd_csv does not exist. Download from https://www.bundesbank.de/statistic-rmi/StatisticDownload?tsId=BBEX3.D.USD.EUR.BB.AC.000&its_csvFormat=en&its_fileFormat=csv&mode=its&its_from=2010'
     eurkurstable = {}
     with open(eurusd_csv, encoding='UTF8') as csv_file:
         reader = csv.reader(csv_file)
