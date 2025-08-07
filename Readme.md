@@ -12,3 +12,13 @@ requirements
 ------------
 python library pandas
 csv of euro exchange rates from bundesbank.de: https://www.bundesbank.de/statistic-rmi/StatisticDownload?tsId=BBEX3.D.USD.EUR.BB.AC.000&its_csvFormat=en&its_fileFormat=csv&mode=its&its_from=2010
+
+installation
+------------
+# install python and git if not installed
+git clone or unzip in directory
+cd tastyworks-guv-euro
+python -m venv venv
+. venv/bin/activate
+pip install pandas
+# python tastyworks-guv-euro.py <args>
