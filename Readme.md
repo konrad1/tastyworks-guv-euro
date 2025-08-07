@@ -15,10 +15,10 @@ csv of euro exchange rates from bundesbank.de: https://www.bundesbank.de/statist
 
 installation
 ------------
-# install python and git if not installed
-git clone or unzip in directory
-cd tastyworks-guv-euro
-python -m venv venv
-. venv/bin/activate
-pip install pandas
-# python tastyworks-guv-euro.py <args>
+- install python and git if not installed
+- git clone or unzip in directory
+- cd tastyworks-guv-euro
+- python -m venv venv
+- . venv/bin/activate
+- pip install pandas
+- python tastyworks-guv-euro.py <args>
