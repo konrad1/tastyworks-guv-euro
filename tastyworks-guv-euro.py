@@ -70,9 +70,11 @@ def check_csv(csv_file) -> None:
 
 def read_csv_tasty(csv_file: str) -> pandas.DataFrame:
     check_csv(csv_file)
-    wk = pandas.read_csv(csv_file, parse_dates=['CLOSE_DATE'])
+    wk = pandas.read_csv(csv_file, parse_dates=['OPEN_DATE','CLOSE_DATE'])
     # replace dollar sign and convert to float only in selected columns
-    wk["NO_WS_GAINLOSS"] = wk["NO_WS_GAINLOSS"].replace('[\$,]', '', regex=True).astype(float)
+    wk["NO_WS_GAINLOSS"] = wk["NO_WS_GAINLOSS"].replace('[\\$,]', '', regex=True).astype(float)
+    wk["NO_WS_COST"] = wk["NO_WS_COST"].replace('[\\$,]', '', regex=True).astype(float)
+    wk["NO_WS_PROCEEDS"] = wk["NO_WS_PROCEEDS"].replace('[\\$,]', '', regex=True).astype(float)
     return wk
 
 
@@ -92,13 +94,14 @@ def augmenteuramount(df:pandas.DataFrame, debug:bool):
         print("csv:")
         print(df.info)
         print(df.head(8))
-    df["EURO_KURS"] = df["CLOSE_DATE"].apply(get_eurusd)
+    df["EURO_KURS_OPEN_DATE"] = df["OPEN_DATE"].apply(get_eurusd)
+    df["EURO_KURS_CLOSE_DATE"] = df["CLOSE_DATE"].apply(get_eurusd)
     if debug:
-        print("EURO_KURS:")
+        print("EURO_KURSE:")
         print(df.info)
         print(df.head(8))
         print(df.dtypes)
-    df["EURO_AMOUNT"] = df.NO_WS_GAINLOSS / df.EURO_KURS
+    df["EURO_AMOUNT"] = df.NO_WS_PROCEEDS / df.EURO_KURS_CLOSE_DATE - df.NO_WS_COST / df.EURO_KURS_OPEN_DATE
     if debug:
         print("EURO_AMOUNT:")
         print(df.info)
